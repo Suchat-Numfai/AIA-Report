@@ -206,15 +206,47 @@ body {
     margin-bottom: 20px;
 }
 
-/* เป็นแบบนี้ (ลบ .ig-card:last-child ออก) */
+/* --- ส่วนสำหรับการพิมพ์ที่แก้ไขแล้ว --- */
 @media print {
-    .no-print, .btn, .btn-sm {
-        display: none !important;
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    /* ซ่อนเฉพาะปุ่มและส่วนที่ไม่จำเป็น แต่ไม่ซ่อน ig-card */
+    .btn, .btn-sm, .btn-info, .button-group-vertical, .modal, footer, .no-print { 
+        display: none !important; 
+    }
+
+    body {
+        background-color: white !important;
+        padding-top: 0 !important;
+    }
+
+    /* บังคับให้ทุกอย่างแสดงผล */
+    .container, .ig-card, .table-responsive {
+        display: block !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        overflow: visible !important;
+    }
+
+    .ig-card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid; /* ป้องกันตารางขาดครึ่งหน้า */
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 }
+
 
 #logTableBody tr:first-child {
     background-color: #f0f9ff;
     font-weight: 500;
 
 }
+
