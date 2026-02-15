@@ -206,9 +206,9 @@ body {
     margin-bottom: 20px;
 }
 
-/* ซ่อนส่วน Log เมื่อกด Print */
+/* เป็นแบบนี้ (ลบ .ig-card:last-child ออก) */
 @media print {
-    .no-print, .btn, .btn-sm, .ig-card:last-child {
+    .no-print, .btn, .btn-sm {
         display: none !important;
     }
 }
@@ -216,4 +216,5 @@ body {
 #logTableBody tr:first-child {
     background-color: #f0f9ff;
     font-weight: 500;
+
 }
