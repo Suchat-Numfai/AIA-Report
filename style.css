@@ -1,0 +1,219 @@
+:root {
+    --ig-primary-background: #FFFBEB;
+    --ig-border-color: #DBDBDB; 
+    --ig-card-background: #FFFFFF; 
+    --ig-blue: #0095f6; 
+}
+
+
+@font-face {
+    font-family: 'Prompt';
+    src: url('Prompt-Regular.ttf') format('truetype');
+    font-weight: 400; 
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Prompt';
+    src: url('Prompt-Bold.ttf') format('truetype');
+    font-weight: 700; 
+    font-style: normal;
+    font-display: swap;
+}
+
+
+
+body {
+    background-color: var(--ig-primary-background);
+    font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    padding-top: 30px;
+    color: #262626;
+}
+
+.aia-logo {
+    max-width: 100px; 
+    height: auto;
+    margin-right: 15px; 
+}
+
+.header-title-inline {
+    font-weight: 600; 
+    margin: 0;
+    font-size: 24px; 
+    letter-spacing: 1px;
+    color: #FF0000; 
+}
+
+.button-group-vertical {
+    min-width: 130px; 
+    gap: 5px !important; 
+}
+
+.ig-card {
+    background-color: var(--ig-card-background);
+    border: 1px solid var(--ig-border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+}
+
+.form-control, .form-select {
+    border-radius: 6px;
+    border: 1px solid #DBDBDB;
+    padding: 8px 10px;
+    background-color: #FAFAFA;
+}
+.form-label {
+    font-weight: 600;
+    color: #262626;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.summary-cheque-no, .summary-box-no {
+    font-size: 40px; 
+    font-weight: 300;
+    color: var(--ig-blue); 
+    text-align: center;
+    line-height: 1.1;
+}
+
+
+.green-bg {
+    background-color: #e6ffe6 !important; 
+}
+
+.table th, .table td {
+    vertical-align: middle;
+    font-size: 14px;      /* ปรับขึ้นมานิดหน่อยให้อ่านง่าย */
+    padding: 10px 8px;    /* เพิ่มระยะห่างให้ดูไม่เบียด */
+    line-height: 1.2;
+    white-space: nowrap;  /* สำคัญ: ห้ามข้อความตกบรรทัด */
+}
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+   background-color: #f7f7f7;
+}
+.table .form-control-sm {
+    height: 30px;          /* ลดความสูงลง */
+    font-size: 13px;       /* ให้เท่ากับขนาดตัวอักษรอื่นในตาราง */
+    padding: 2px 5px;
+}
+
+.table .status-select { 
+    min-width: 350px; 
+}
+
+.table .btn-sm {
+    padding: 4px 10px;     /* เพิ่มช่องว่างด้านข้าง */
+    font-size: 11px;       /* ลดขนาดฟอนต์ลงเพื่อให้คำว่า "เพิ่มข้อมูล" อยู่ในบรรทัดเดียว */
+    font-weight: 500;
+    width: auto;           /* ปล่อยให้ปุ่มขยายตามข้อความ */
+}
+.table input[readonly] {
+    background-color: transparent; 
+    border: none; 
+    text-align: right; 
+    font-weight: 400;
+    padding: 0.25rem 0; 
+}
+
+.barcode-container {
+    background: white;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+#barcode {
+    max-height: 60px; /* ปรับความสูงตามต้องการ */
+    width: auto;
+}
+
+/* ปรับความกว้าง Container เพิ่มเล็กน้อยเพื่อให้รองรับฟิลด์ที่เพิ่มขึ้น */
+.container {
+    max-width: 1300px !important;
+}
+
+.table td:first-child, .table th:first-child {
+    min-width: 200px;     /* ปรับเป็น 250px เพื่อให้ BCWSCHQ-TMB_BATCH 1 ไม่ตกบรรทัด */
+    text-align: left;
+    white-space: nowrap;  /* บังคับให้เรียงเป็นแถวเดียว */
+}
+
+/* --- ส่วนสำหรับการพิมพ์ (Print Mode) --- */
+@media print {
+    /* ตั้งค่าหน้ากระดาษเป็นแนวนอนเพื่อให้ตารางไม่ล้น */
+    @page {
+        size: A4 landscape;
+        margin: 15mm;
+    }
+
+    /* ซ่อนส่วนที่ไม่ต้องการให้เห็นในกระดาษพิมพ์ */
+    .btn, 
+    .button-group-vertical, 
+    .modal, 
+    footer,
+    .btn-info { 
+        display: none !important; 
+    }
+
+    body {
+        background-color: white !important;
+        padding-top: 0 !important;
+    }
+
+    /* ขยาย Container ให้เต็มหน้า */
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .ig-card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* บังคับให้เบราว์เซอร์พิมพ์สีพื้นหลัง (เช่น สีเขียวในตาราง) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* ปรับตารางให้อ่านง่ายขึ้นในกระดาษ */
+    .table th, .table td {
+        font-size: 12px !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    /* ปรับช่อง Input ให้ดูเหมือนข้อความธรรมดาเวลาพิมพ์ */
+    .form-control, .form-select {
+        border: none !important;
+        background-color: transparent !important;
+        padding: 0 !important;
+        appearance: none;
+    }
+}
+
+/* ตกแต่งตาราง Log */
+.ig-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+/* ซ่อนส่วน Log เมื่อกด Print */
+@media print {
+    .no-print, .btn, .btn-sm, .ig-card:last-child {
+        display: none !important;
+    }
+}
+
+#logTableBody tr:first-child {
+    background-color: #f0f9ff;
+    font-weight: 500;
+}
