@@ -178,7 +178,6 @@ function generateBarcode() {
 // ==========================================
 // ส่วนที่ 3: Export Text (คืนค่าสเปก AIA - Windows Version)
 // ==========================================
-
 function generateTextContent() {
     calculateAll();
     const dateInput = document.getElementById('inputDate').value;
@@ -201,28 +200,25 @@ function generateTextContent() {
         const status = (document.getElementById(`status${fId}`)?.value || "").toUpperCase();
         const total  = String(document.getElementById(`totalChq${fId}`)?.value || "0");
 
-        // --- คำนวณช่องว่างตามรูปภาพ (ตัวหนังสือสีแดง) ---
+        // --- ใช้การต่อ String แบบ Fixed Width ตามรูป ---
 
-        // 1. ช่องว่างหลัง Batch Name (รูปบอก 12 หรือ 10 ตามความยาวชื่อ)
-        // เพื่อให้ Column ถัดไปตรงกัน เราจะใช้ fixed width ที่ 34 ช่องเหมือนเดิม 
-        // (ซึ่งจะทำให้ได้ช่องว่างประมาณ 10-12 ตามที่รูปต้องการ)
-        const colBatch = batch.displayName.padEnd(34); 
+        // 1. ชื่อ Batch: บังคับให้ยาว 34 ช่องเสมอ
+        const col1 = batch.displayName.padEnd(31, ' ');
 
-        // 2. ชุดตัวเลขตรงกลาง (คั่นด้วย 1 ช่องว่าง)
-        const colNumbers = `${sChq} ${fRun} ${tChq} ${tRun}`;
+        // 2. ชุดตัวเลข: คั่นด้วย 1 ช่องว่าง (ความยาวรวม 41 ช่อง)
+        const col2 = `${sChq} ${fRun} ${tChq} ${tRun}`;
 
-        // 3. ช่องว่างหลัง Status (รูประบุ "ช่องว่าง 21")
-        const colStatus = status; 
-        const space21 = ' '.repeat(21);
+        // 3. สถานะ: บังคับให้สถานะ (COMPLETED) + ช่องว่าง 21 รวมเป็น 30 ช่อง
+        // (COMPLETED = 9 ตัว + Space 21 = 30)
+        const col3 = status.padEnd(30, ' ');
 
-        // 4. ช่องว่างหลัง Total (รูประบุ "ช่องว่าง 27" หรือ "29")
-        // ใช้หลักการ: ความกว้างรวมของพื้นที่ Total + ช่องว่างหลัง = 32 ช่อง
-        // เพื่อให้ "จุด" ปิดท้ายตรงกันเสมอ ไม่ว่าเลข Total จะมีกี่หลัก
-        const totalWithSpace = total.padEnd(32); 
+        // 4. จำนวน (Total): บังคับให้ Total + ช่องว่างหลัง รวมเป็น 30 ช่อง เพื่อให้จุดตรงกัน
+        // เช่น ถ้า Total "860" (3 หลัก) + Space 27 = 30
+        // เช่น ถ้า Total "2" (1 หลัก) + Space 29 = 30
+        const col4 = total.padEnd(30, ' ');
 
-        // ประกอบร่างบรรทัด
-        // โครงสร้าง: [Batch(34)] [Numbers] [Status] [Space 21] [Total + Space รวม 32] [.]
-        const line = `${colBatch}${colNumbers} ${colStatus}${space21}${totalWithSpace}.`;
+        // ประกอบร่าง: [34] + [43] + [ ] + [30] + [30] + [.]
+        const line = `${col1}${col2} ${col3}${col4}.`;
         
         content += line + "\r\n";
     });
@@ -234,8 +230,7 @@ function exportToText() {
     const res = generateTextContent();
     if (res.error) return alert(res.error);
 
-    // ใช้ '\ufeff' เพื่อเติม Byte Order Mark (BOM) 
-    // ช่วยให้โปรแกรมบน Windows (เช่น Excel/Notepad) รับรู้ว่าเป็น UTF-8 จะได้ไม่อ่านภาษาไทยเพี้ยน
+    // ใส่ BOM และใช้ CRLF สำหรับ Windows
     const blob = new Blob(['\ufeff' + res.content], { type: 'text/plain;charset=utf-8' });
     
     const a = document.createElement('a');
@@ -243,16 +238,15 @@ function exportToText() {
     
     a.href = url;
     a.download = 'BATCHCHQ.txt';
-    document.body.appendChild(a); // เพิ่มลงใน Body ชั่วคราว (กันพลาดในบาง Browser)
+    
+    document.body.appendChild(a);
     a.click();
     
-    // Cleanup
     setTimeout(() => {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
     }, 0);
 }
-
 // ==========================================
 // ส่วนที่ 4: Export Excel (คืนค่าจัดวางตามเซลล์)
 // ==========================================
