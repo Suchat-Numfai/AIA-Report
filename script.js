@@ -183,32 +183,47 @@ function generateTextContent() {
     calculateAll();
     const dateInput = document.getElementById('inputDate').value;
     
-    // ตรวจสอบข้อมูลเบื้องต้น
     if (!dateInput) return { content: null, error: "กรุณาเลือก 'รอบวันที่' ก่อน" };
-    const startChq = document.getElementById('startChequeNo').value;
-    if (!startChq || parseInt(startChq) === 0) return { content: null, error: "กรุณากรอก 'เริ่มเลขเช็ค' ก่อน" };
+    const startChqInput = document.getElementById('startChequeNo').value;
+    if (!startChqInput || parseInt(startChqInput) === 0) return { content: null, error: "กรุณากรอก 'เริ่มเลขเช็ค' ก่อน" };
 
     const d = new Date(dateInput + 'T00:00:00');
+    const dateHeader = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
     
-    // ใช้ \r\n เพื่อขึ้นบรรทัดใหม่แบบ Windows (CRLF)
-    let content = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}\r\n`;
+    let content = dateHeader + "\r\n";
 
     getAllBatchItemsInOrder().forEach(batch => {
         const fId = batch.fullId;
-        const sChq = String(document.getElementById(`startChq${fId}`).value).padStart(10, '0');
-        const fRun = String(document.getElementById(`fromRun${fId}`).value).padStart(10, '0');
-        const tChq = String(document.getElementById(`toChq${fId}`).value).padStart(10, '0');
-        const tRun = String(document.getElementById(`toRun${fId}`).value).padStart(10, '0');
-        const status = document.getElementById(`status${fId}`).value.toUpperCase();
-        const total = String(document.getElementById(`totalChq${fId}`).value);
+        const sChq  = String(document.getElementById(`startChq${fId}`)?.value || "").padStart(10, '0');
+        const fRun  = String(document.getElementById(`fromRun${fId}`)?.value || "").padStart(10, '0');
+        const tChq  = String(document.getElementById(`toChq${fId}`)?.value || "").padStart(10, '0');
+        const tRun  = String(document.getElementById(`toRun${fId}`)?.value || "").padStart(10, '0');
+        const status = (document.getElementById(`status${fId}`)?.value || "").toUpperCase();
+        const total  = String(document.getElementById(`totalChq${fId}`)?.value || "0");
 
-        // จัด Format ช่องว่างตามสเปก AIA
-        const statusPad = status === 'VOIDED' ? '    ' : '';
-        const dotsPad = ' '.repeat(Math.max(0, 29 - total.length));
+        // --- คำนวณช่องว่างตามรูปภาพ (ตัวหนังสือสีแดง) ---
+
+        // 1. ช่องว่างหลัง Batch Name (รูปบอก 12 หรือ 10 ตามความยาวชื่อ)
+        // เพื่อให้ Column ถัดไปตรงกัน เราจะใช้ fixed width ที่ 34 ช่องเหมือนเดิม 
+        // (ซึ่งจะทำให้ได้ช่องว่างประมาณ 10-12 ตามที่รูปต้องการ)
+        const colBatch = batch.displayName.padEnd(34); 
+
+        // 2. ชุดตัวเลขตรงกลาง (คั่นด้วย 1 ช่องว่าง)
+        const colNumbers = `${sChq} ${fRun} ${tChq} ${tRun}`;
+
+        // 3. ช่องว่างหลัง Status (รูประบุ "ช่องว่าง 21")
+        const colStatus = status; 
+        const space21 = ' '.repeat(21);
+
+        // 4. ช่องว่างหลัง Total (รูประบุ "ช่องว่าง 27" หรือ "29")
+        // ใช้หลักการ: ความกว้างรวมของพื้นที่ Total + ช่องว่างหลัง = 32 ช่อง
+        // เพื่อให้ "จุด" ปิดท้ายตรงกันเสมอ ไม่ว่าเลข Total จะมีกี่หลัก
+        const totalWithSpace = total.padEnd(32); 
+
+        // ประกอบร่างบรรทัด
+        // โครงสร้าง: [Batch(34)] [Numbers] [Status] [Space 21] [Total + Space รวม 32] [.]
+        const line = `${colBatch}${colNumbers} ${colStatus}${space21}${totalWithSpace}.`;
         
-        const line = `${batch.displayName.padEnd(34)}${sChq} ${fRun} ${tChq} ${tRun} ${status}${statusPad}${' '.repeat(21)}${total}${dotsPad}.`;
-        
-        // ต่อท้ายบรรทัดด้วย \r\n
         content += line + "\r\n";
     });
     
