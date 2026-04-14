@@ -150,11 +150,6 @@ if (document.getElementById('nextBox')) {
     generateBarcode();
 }
 
-
-
-
-
-
 function generateBarcode() {
     const orderInput = document.getElementById('productionOrder');
     const val = orderInput ? orderInput.value.trim() : "";
@@ -181,17 +176,22 @@ function generateBarcode() {
 
 
 // ==========================================
-// ส่วนที่ 3: Export Text (คืนค่าสเปก AIA)
+// ส่วนที่ 3: Export Text (คืนค่าสเปก AIA - Windows Version)
 // ==========================================
+
 function generateTextContent() {
     calculateAll();
     const dateInput = document.getElementById('inputDate').value;
+    
+    // ตรวจสอบข้อมูลเบื้องต้น
     if (!dateInput) return { content: null, error: "กรุณาเลือก 'รอบวันที่' ก่อน" };
     const startChq = document.getElementById('startChequeNo').value;
     if (!startChq || parseInt(startChq) === 0) return { content: null, error: "กรุณากรอก 'เริ่มเลขเช็ค' ก่อน" };
 
     const d = new Date(dateInput + 'T00:00:00');
-    let content = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}\n`;
+    
+    // ใช้ \r\n เพื่อขึ้นบรรทัดใหม่แบบ Windows (CRLF)
+    let content = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}\r\n`;
 
     getAllBatchItemsInOrder().forEach(batch => {
         const fId = batch.fullId;
@@ -202,22 +202,40 @@ function generateTextContent() {
         const status = document.getElementById(`status${fId}`).value.toUpperCase();
         const total = String(document.getElementById(`totalChq${fId}`).value);
 
-        const statusPad = status === 'VOIDED' ? '   ' : '';
+        // จัด Format ช่องว่างตามสเปก AIA
+        const statusPad = status === 'VOIDED' ? '    ' : '';
         const dotsPad = ' '.repeat(Math.max(0, 29 - total.length));
+        
         const line = `${batch.displayName.padEnd(34)}${sChq} ${fRun} ${tChq} ${tRun} ${status}${statusPad}${' '.repeat(21)}${total}${dotsPad}.`;
-        content += line + "\n";
+        
+        // ต่อท้ายบรรทัดด้วย \r\n
+        content += line + "\r\n";
     });
+    
     return { content, error: null };
 }
 
 function exportToText() {
     const res = generateTextContent();
     if (res.error) return alert(res.error);
-    const blob = new Blob([res.content], { type: 'text/plain' });
+
+    // ใช้ '\ufeff' เพื่อเติม Byte Order Mark (BOM) 
+    // ช่วยให้โปรแกรมบน Windows (เช่น Excel/Notepad) รับรู้ว่าเป็น UTF-8 จะได้ไม่อ่านภาษาไทยเพี้ยน
+    const blob = new Blob(['\ufeff' + res.content], { type: 'text/plain;charset=utf-8' });
+    
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    
+    a.href = url;
     a.download = 'BATCHCHQ.txt';
+    document.body.appendChild(a); // เพิ่มลงใน Body ชั่วคราว (กันพลาดในบาง Browser)
     a.click();
+    
+    // Cleanup
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 0);
 }
 
 // ==========================================
