@@ -209,7 +209,7 @@ function generateTextContent() {
         const line = `${batch.displayName.padEnd(34)}${sChq} ${fRun} ${tChq} ${tRun} ${status}${statusPad}${' '.repeat(21)}${total}${dotsPad}.`;
         
         // ต่อท้ายบรรทัดด้วย \r\n
-        content += line + "\n";
+        content += line + "\r\n";
     });
     
     return { content, error: null };
