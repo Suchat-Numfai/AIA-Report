@@ -176,21 +176,27 @@ function generateBarcode() {
 
 
 // ==========================================
-// ส่วนที่ 3: Export Text (คืนค่าสเปก AIA - Windows Version)
+// ส่วนที่ 3: Export Text (คืนค่าสเปก AIA)
 // ==========================================
+/**
+ * ฟังก์ชันสำหรับสร้างเนื้อหาภายในไฟล์ Text
+ */
 function generateTextContent() {
-    calculateAll();
+    calculateAll(); // เรียกใช้ฟังก์ชันคำนวณ (ถ้ามี)
+
     const dateInput = document.getElementById('inputDate').value;
-    
     if (!dateInput) return { content: null, error: "กรุณาเลือก 'รอบวันที่' ก่อน" };
+
     const startChqInput = document.getElementById('startChequeNo').value;
     if (!startChqInput || parseInt(startChqInput) === 0) return { content: null, error: "กรุณากรอก 'เริ่มเลขเช็ค' ก่อน" };
 
+    // แปลงวันที่เป็นรูปแบบ MM/DD/YYYY
     const d = new Date(dateInput + 'T00:00:00');
     const dateHeader = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
-    
+
     let content = dateHeader + "\r\n";
 
+    // วนลูปสร้างเนื้อหาแต่ละบรรทัดตามรูปแบบที่ระบบต้องการ
     getAllBatchItemsInOrder().forEach(batch => {
         const fId = batch.fullId;
         const sChq  = String(document.getElementById(`startChq${fId}`)?.value || "").padStart(10, '0');
@@ -200,48 +206,42 @@ function generateTextContent() {
         const status = (document.getElementById(`status${fId}`)?.value || "").toUpperCase();
         const total  = String(document.getElementById(`totalChq${fId}`)?.value || "0");
 
-        // --- ใช้การต่อ String แบบ Fixed Width ตามรูป ---
-
-        // 1. ชื่อ Batch: บังคับให้ยาว 34 ช่องเสมอ
+        // กำหนดระยะห่าง (Padding) ให้ตรงตาม Format
         const col1 = batch.displayName.padEnd(31, ' ');
-
-        // 2. ชุดตัวเลข: คั่นด้วย 1 ช่องว่าง (ความยาวรวม 41 ช่อง)
         const col2 = `${sChq} ${fRun} ${tChq} ${tRun}`;
-
-        // 3. สถานะ: บังคับให้สถานะ (COMPLETED) + ช่องว่าง 21 รวมเป็น 30 ช่อง
-        // (COMPLETED = 9 ตัว + Space 21 = 30)
         const col3 = status.padEnd(30, ' ');
-
-        // 4. จำนวน (Total): บังคับให้ Total + ช่องว่างหลัง รวมเป็น 30 ช่อง เพื่อให้จุดตรงกัน
-        // เช่น ถ้า Total "860" (3 หลัก) + Space 27 = 30
-        // เช่น ถ้า Total "2" (1 หลัก) + Space 29 = 30
         const col4 = total.padEnd(30, ' ');
 
-        // ประกอบร่าง: [34] + [43] + [ ] + [30] + [30] + [.]
         const line = `${col1}${col2} ${col3}${col4}.`;
-        
         content += line + "\r\n";
     });
-    
+
     return { content, error: null };
 }
 
+/**
+ * ฟังก์ชันสำหรับดาวน์โหลดไฟล์ Text (แก้ไขการตัด BOM ออกแล้ว)
+ */
 function exportToText() {
     const res = generateTextContent();
     if (res.error) return alert(res.error);
 
-    // ใส่ BOM และใช้ CRLF สำหรับ Windows
-    const blob = new Blob(['\ufeff' + res.content], { type: 'text/plain;charset=utf-8' });
-    
+    /**
+     * แก้ไข: นำ '\ufeff' ออกเพื่อให้ไฟล์เป็น Plain Text บริสุทธิ์
+     * ป้องกันปัญหาโปรแกรมปลายทางอ่านค่าวันที่ผิดพลาด (Error: ๏ปฟ)
+     */
+    const blob = new Blob([res.content], { type: 'text/plain;charset=utf-8' });
+
     const a = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
     a.href = url;
     a.download = 'BATCHCHQ.txt';
-    
+
+    // เพิ่ม element ลงในเอกสารและกดคลิกเพื่อดาวน์โหลด
     document.body.appendChild(a);
     a.click();
-    
+
+    // เคลียร์ memory และลบ element ทิ้ง
     setTimeout(() => {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
